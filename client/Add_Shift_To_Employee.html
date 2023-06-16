@@ -1,0 +1,144 @@
+<html>
+    <link rel="stylesheet" href="Factory.css" type="text/css">
+    <style>
+       
+    </style>
+    <script>
+        let empsID = sessionStorage["empsID"]
+        function fullname()
+        {
+            var UserName = document.getElementById("fullname").innerHTML = sessionStorage.getItem("Full Name")
+            if(UserName == null)
+            {
+                window.location = "LogIn.html"
+            }
+        }
+        async function GetEmp()
+        {
+            let resp = await fetch("https://localhost:44307/api/employees/" + empsID);
+            let employee = await resp.json();
+
+            let tblObj = document.getElementById("empTable")
+            let tdID = document.getElementById("tdID");
+            let tdFN = document.getElementById("tdFN");
+            let tdLN = document.getElementById("tdLN");
+            let tdSWY = document.getElementById("tdSWY");
+            let tdDept = document.getElementById("tdDept");
+            let tdShifts = document.getElementById("tdShifts");
+            tdID.innerText = employee.ID;
+            tdFN.innerText = employee.First_Name;
+            tdLN.innerText = employee.Last_Name;
+            tdSWY.innerText = employee.Start_Work_Year;
+            tdDept.innerText = employee.Department;            
+            let trObj = document.getElementById("trObj");            
+            let select = document.getElementById("selectObj")
+            var Option = document.createElement("option")
+            Option.text = "Choose a shift"
+            select.appendChild(Option)
+            let resp2 = await fetch("https://localhost:44307/api/shifts");
+            let shiftss = await resp2.json(); 
+            let shifts = shiftss
+            shiftss.forEach(shift => {
+                let emp = shift.Employees
+                emp.forEach(empl => {
+                    if(empl.ID == employee.ID)
+                    {
+                        shifts.shift(shift)
+                    }                       
+                });
+            });
+            shifts.forEach(shift => {
+                    let newObj = document.createElement('option')
+                    newObj.value = shift.ID
+                    let NOID = shift.ID
+                    let da = new Date(shift.Date)
+                    let Dday = da.getDate(shift.Date)
+                    let Dmonth = da.getMonth(shift.Date)+1
+                    let Dyear = da.getFullYear(shift.Date)
+                    let date = Dday + "/" + Dmonth + "/" + Dyear
+                    let NODate = date
+                    let NOST = shift.StartTime
+                    let NOET = shift.EndTime
+                    newObj.text = (" Date: " + NODate + " Starts at: " + NOST + " Ends at: " + NOET) 
+                    select.appendChild(newObj) 
+               });
+        }
+        async function saveShift()
+        {
+            let shID = document.querySelector("#selectObj").value
+            let shift = { EmployeeID : empsID,
+                        ShiftID: shID}
+                        
+            let fetchParams = {method : 'PUT',
+                                body : JSON.stringify(shift),
+                                headers : {"Content-Type" : "application/json"}
+                                }
+            let resp = await fetch("https://localhost:44307/api/shifts/" + empsID, fetchParams);
+            let status = await resp.json();
+            alert(status)
+            window.location = "Employees.html"
+        }
+        function Back()
+        {
+            window.history.back()
+        }    
+        function actionsCounter()
+        {
+            let user = sessionStorage.getItem("User ID")
+            let counter = localStorage.getItem(user) - 1
+            if(counter == 0)
+            {
+                alert("You reached your maximum actions for today! come back tomorow")
+                window.location = "login.html"
+            }
+            else
+            {
+                counter = localStorage.setItem(user, counter)
+            }
+        }
+        function clock()
+        {
+            let interval = setInterval( () =>
+            {
+                let d = new Date()
+                let time = d.toLocaleTimeString()
+                console.log(time)
+                time = localStorage.setItem("Time", time)
+            }
+            , 1000)
+        }
+    </script>
+    <body onload="fullname(), GetEmp(), clock()">
+        <div id="fullname" class="usercenter"></div>
+        <h1 class="h1">Eco-Fact<br/>Eco-Factory Managment System</h1>
+        <div class="empstable">
+            <table align='center' cellspacing=2 cellpadding=5 id="empTable" border=1 >
+                <tr>
+                    <th>ID</th>
+                    <th>First name</th>
+                    <th>Last name</th>
+                    <th>Start work year</th>
+                    <th>Department</th>
+                    <th>Shifts</th>
+                    <th>Actions</th>
+                </tr>
+                <tbody id="empDet">
+                    <tr id="trObj">
+                        <td id="tdID"></td>
+                        <td id="tdFN"></td>
+                        <td id="tdLN"></td>
+                        <td id="tdSWY"></td>
+                        <td id="tdDept"></td>
+                        <td id="tdShifts" >
+                            <select id="selectObj" ></select>
+                        </td>
+                        <td><input type="button" id="Save" value="Save" onclick="saveShift(), actionsCounter()">
+                            <input type="button" id="Back" value="Back" onclick="Back()">
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div id="logout" ><p><a href="LogIn.html" style="color: darkmagenta;" class="logout">Logout</a></p></div>
+    </body>
+    </html>

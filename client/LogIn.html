@@ -1,0 +1,97 @@
+<html> 
+    <link rel="stylesheet" href="Factory.css" type="text/css">
+    <style>
+        .center 
+        {
+            border: 5px solid;
+            border-radius: 10px;
+            position: absolute;
+            background-color: antiquewhite;
+            text-align: center;
+            top: 50%;
+            left: 35%;
+            transform: translate(0, -50%);
+            padding: 10px;
+        }
+    </style>
+    <script>
+        async function showNIA()
+        {
+            let resp = await fetch("https://localhost:44307//api/login");
+            let details = await resp.json(); 
+            details.forEach(detail => {
+                let UID = detail.ID
+                let UNIA = detail.Number_of_Actions
+                let time = localStorage.getItem("Time")
+                let t = new Date()
+                let ST = t.setHours(0,0,0,0)
+                if(time == ST)
+                {
+                    localStorage.setItem(UID, UNIA)
+                }
+            });
+        }
+        async function login()
+        {
+            const userNa = document.getElementById("username").value;
+            const passw = document.getElementById("password").value;
+            let resp = await fetch("https://localhost:44307//api/login/get?Username=" + userNa);
+            let details = await resp.json();
+            if( details[0].Number_of_Actions != 0)
+            {
+                if(details[0] != null)
+                {
+                    let paswrd = details[0].Password
+                    let fName = details[0].FullName
+                    let UID = details[0].ID
+                    if(passw == paswrd)
+                    {
+                        fName = sessionStorage.setItem("Full Name", fName)
+                        UID = sessionStorage.setItem("User ID", UID)
+                        window.location.href = "homePage.html"
+                    }
+                    else
+                    {
+                        alert("Password error! Please enter your password")
+                        document.getElementById("password").value = ""
+                    }
+                }
+                else
+                {
+                    alert("Wrong Usename! Only registered Users can enter the Eco-System")
+                    document.getElementById("username").value = ""
+                    document.getElementById("password").value = ""
+                }
+            }
+            else
+            {
+                alert("You have reached your maximum number of actions! It will be reinitiated at 00:00")
+            }
+        }
+        function clock()
+        {
+            let interval = setInterval( () =>
+            {
+                let d = new Date()
+                let time = d.toLocaleTimeString()
+                console.log(time)
+                time = localStorage.setItem("Time", time)
+            }
+            , 1000)
+        }
+    </script>
+    <body onload="clock(), showNIA()">
+        <h1 class="h1">Eco-Fact<br/>Eco-Factory Managment System</h1>
+        <div class="center">
+            <b> Log into Eco-system </b>
+            <br/>
+            Enter your username:
+            <input type="text" id="username" placeholder="Enter your username">
+            <br/><br/>
+            Enter your password:
+            <input type="password" id="password" placeholder="Enter your password">
+            <br/><br/>
+            <input type="button" id="login" value="Log In" onclick="login()">
+        </div>
+    </body>
+</html>

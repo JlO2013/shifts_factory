@@ -1,0 +1,123 @@
+<html>
+    <link rel="stylesheet" href="Factory.css" type="text/css">
+    <style>
+        .deptTable
+        {
+            border: 5px solid;
+            border-radius: 10px;
+            position: absolute;
+            background-color: antiquewhite;
+            top: 40%;
+            left: 33%;
+            text-align: center;
+            transform: translate(0, -50%);
+            padding: 10px;
+        }
+    </style>
+    <script>
+        let deptID = sessionStorage.getItem("deptID")
+        function fullname()
+        {
+            var UserName = document.getElementById("fullname").innerHTML = sessionStorage.getItem("Full Name")
+            if(UserName == null)
+            {
+                window.location = "LogIn.html"
+            }        
+        }
+        function actionsCounter()
+        {
+            let user = sessionStorage.getItem("User ID")
+            let counter = localStorage.getItem(user) - 1
+            if(counter == 0)
+            {
+                alert("You reached your maximum actions for today! come back tomorow")
+                sessionStorage.removeItem("Full Name")
+                window.location = "Login.html"            }
+            else
+            {
+                counter = localStorage.setItem(user, counter)
+            }
+        }
+        async function UpdateDepartment()
+        {
+            let resp = await fetch("https://localhost:44307/api/departments/" + deptID);
+            let department = await resp.json();
+            document.getElementById("Name").value = department.Name;
+            document.getElementById("Manager").value = department.Manager;
+        }
+        function clock()
+        {
+            let interval = setInterval( () =>
+            {
+                let d = new Date()
+                let time = d.toLocaleTimeString()
+                time = localStorage.setItem("Time", time)
+            }
+            , 1000)
+        }
+        async function showMan()
+        {
+            let resp2 = await fetch("https://localhost:44307/api/employees");
+            let emps = await resp2.json();
+            let select = document.getElementById("Manager")
+            var Option = document.createElement("option")
+            Option.text = "Choose a manager"
+            select.appendChild(Option)   
+            emps.forEach(emp => {
+                    let newObj = document.createElement('option')
+                    let NOID = emp.ID
+                    let NOFN = emp.First_Name
+                    let NOLN = emp.Last_Name
+                    newObj.value = NOID
+                    newObj.text = ( NOFN + " " + NOLN) 
+                    select.appendChild(newObj)
+            });
+        }
+        async function saveDepartment()
+        {   
+            actionsCounter()
+            let managerID = document.querySelector("#Manager").value
+            let deptNane = document.getElementById("Name").value
+            console.log(deptNane + " " + managerID)
+            let dept = { Name : deptNane,
+                        Manager : managerID}
+
+            let fetchParams = {method : 'PUT',
+                                body : JSON.stringify(dept),
+                                headers : {"Content-Type" : "application/json"}
+                                }
+            let resp3 = await fetch("https://localhost:44307/api/Departments/" + Number(deptID), fetchParams);
+            let status = await resp3.json();
+            alert(status)
+            window.location = "Departments.html"
+        }
+        function Back()
+        {
+            window.history.back()
+        }
+    </script>
+    <body onload="fullname(), UpdateDepartment(), showMan(), clock()">
+        <div id="fullname" class="usercenter"></div>
+        <h1 class="h1">Eco-Fact<br/>Eco-Factory Managment System</h1>  
+        <div class="deptTable">
+            <table align='center' cellspacing=2 cellpadding=5 id="deptTable" border=1 >
+                <tr>
+                    <th>Department's Name</th>
+                    <th>Manager's Name</th>
+                    <th></th>
+                </tr>
+                <tbody id="empTab">
+                    <tr>
+                        <td><input type="text" id="Name" required></td>
+                        <td>
+                            <select id="Manager"></select>
+                        </td>
+                        <td><input type="button" id="Save" value="Save" onclick="saveDepartment()">
+                        <input type="button" id="Back" value="Back" onclick="Back()"</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div id="logout" ><p><a href="LogIn.html" style="color: darkmagenta;" class="logout">Logout</a></p></div>
+    </body>
+</html>
