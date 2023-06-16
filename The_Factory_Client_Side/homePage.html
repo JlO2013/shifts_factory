@@ -1,0 +1,66 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="Factory.css" type="text/css">
+    </head>
+    <style>
+        .center {
+    border: 5px solid;
+    border-radius: 10px;
+    position: absolute;
+    background-color: antiquewhite;
+    text-align:center;
+    top: 50%;
+    left: 38%;
+    transform: translate(0, -50%);
+    padding: 10px;
+    height: 40%;
+    width: 20%;
+}   
+    </style>
+    <script>
+        function fullname()
+        {
+            var UserName = document.getElementById("fullname").innerHTML = sessionStorage.getItem("Full Name")
+            if(UserName == null)
+            {
+                window.location = "LogIn.html"
+            }        
+        }
+        function actionsCounter()
+        {
+            let user = sessionStorage.getItem("User ID")
+            let counter = localStorage.getItem(user) - 1
+            if(counter == 0)
+            {
+                alert("You reached your maximum actions for today! come back tomorow")
+                sessionStorage.removeItem("Full Name")
+                window.location = "Login.html"
+            }
+            else
+            {
+                counter = localStorage.setItem(user, counter)
+            }
+        }
+        function clock()
+        {
+            let interval = setInterval( () =>
+            {
+                let d = new Date()
+                let time = d.toLocaleTimeString()
+                time = localStorage.setItem("Time", time)
+            }
+            , 1000)
+        }
+    </script>
+    <body onload="fullname(), clock()">
+        <div id="fullname" class="usercenter"></div>
+        <h1 class="h1">Eco-Fact<br/>Eco-Factory Managment System</h1>
+        <div class="center">
+            <p style="font-size: 35px;">Menu:</p><br/>
+            <a href="Employees.html" style="font-size: 30px;" onclick="actionsCounter()">Employees</a><br/>
+            <a href="Departments.html" style="font-size: 30px;" onclick="actionsCounter()">Departments</a><br/>
+            <a href="Shifts.html" style="font-size: 30px;" onclick="actionsCounter()">Shifts</a>
+        </div>
+        <div id="logout" ><p><a href="LogIn.html" style="color: darkmagenta;" class="logout">Logout</a></p></div>
+    </body>
+</html>

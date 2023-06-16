@@ -1,0 +1,151 @@
+<html>
+    <link rel="stylesheet" href="Factory.css" type="text/css">
+    <style>
+        .deptTable
+        {
+            border: 5px solid;
+            border-radius: 10px;
+            position: absolute;
+            background-color: antiquewhite;
+            top: 40%;
+            left: 33%;
+            text-align: center;
+            transform: translate(0, -50%);
+            padding: 10px;
+        }
+    </style>
+    <script>
+        function fullname()
+        {
+            var UserName = document.getElementById("fullname").innerHTML = sessionStorage.getItem("Full Name")
+            if(UserName == null)
+            {
+                window.location = "LogIn.html"
+            }
+        }
+        function actionsCounter()
+        {
+            let user = sessionStorage.getItem("User ID")
+            let counter = localStorage.getItem(user) - 1
+            if(counter == 0)
+            {
+                alert("You reached your maximum actions for today! come back tomorow")
+                sessionStorage.removeItem("Full Name")
+                window.location = "Login.html"
+            }
+            else
+            {
+                counter = localStorage.setItem(user, counter)
+            }
+        }
+        function Edit_Department(deptID)
+        {
+            sessionStorage["deptID"] = deptID
+            window.location.href = "Edit_department.html";
+        }
+        async function createDepartmentsTable(departments, empls)
+        { 
+            let tblObj = document.getElementById("deptTable")
+            departments.forEach(depts => {
+                let tdID = document.createElement("td");
+                let tdName = document.createElement("td");
+                let tdManager = document.createElement("td");
+                let tdEdit = document.createElement("td");
+                let tdDelete = document.createElement("td");
+                let Edit = document.createElement("button")
+                let deleteBut = document.createElement("button")
+                let linkObj = document.createElement("a");
+                let linkObjD = document.createElement("a")
+                deleteBut.id = "delbut"
+                let deptID = depts.ID
+                tdID.innerText = deptID
+                tdName.innerText = depts.Name;
+                empls.forEach(employee => {
+                    if (depts.Manager == employee.ID) {
+                        let manFN = employee.First_Name
+                        let manLN = employee.Last_Name
+                        tdManager.innerText = (manFN + " " + manLN)
+                    }
+                });
+                linkObj.innerText = "Edit"
+                linkObjD.innerText = "Delete"
+                linkObj.href = "javascript:Edit_Department(" + deptID + ");"
+                linkObjD.href = "javascript:Delete_Department(" + deptID +");"
+                let disDel = document.getElementById("del")
+                let trObj = document.createElement("tr");
+                trObj.appendChild(tdID);
+                trObj.appendChild(tdName);
+                trObj.appendChild(tdManager);
+                Edit.append(linkObj);
+                tdEdit.appendChild(Edit)
+                deleteBut.appendChild(linkObjD)
+                if(depts.Employees.length == 0)
+                {
+                    tdDelete.appendChild(deleteBut)
+                }
+                trObj.appendChild(tdEdit)
+                trObj.appendChild(tdDelete)
+                tblObj.appendChild(trObj);
+            })
+        }
+        async function GetDepts()
+        {
+            let resp = await fetch("https://localhost:44307/api/departments")
+            let departments= await resp.json();
+            let resp1 = await fetch("https://localhost:44307/api/employees")
+            let empls= await resp1.json();
+            createDepartmentsTable(departments, empls)
+        }
+        function HPBack()
+        {
+            window.location = "homePage.html"
+        }
+        async function Delete_Department(deptID)
+        {
+            actionsCounter()
+            let fetchParams = {method : 'DELETE',
+                                header : {"Content-Type" : "application/json"}
+                                }
+            let resp = await fetch("https://localhost:44307/api/departments/" + deptID, fetchParams);
+            let status = await resp.json();
+            alert(status)
+            window.location = "Departments.html"
+        }
+        function Add_Department()
+        {
+            window.location = "NewDepartment.html";
+        }
+        function clock()
+        {
+            let interval = setInterval( () =>
+            {
+                let d = new Date()
+                let time = d.toLocaleTimeString()
+                console.log(time)
+                time = localStorage.setItem("Time", time)
+            }
+            , 1000)
+        }
+    </script>
+    <body onload="fullname(), GetDepts(), clock()">
+        <div id="fullname" class="usercenter"></div>
+        <h1 class="h1">Eco-Fact<br/>Eco-Factory Managment System</h1>
+        <div class="deptTable">
+            <table align='center' cellspacing=2 cellpadding=5 id="deptTable" border=1 >
+                <tr>
+                    <th>ID</th>
+                    <th>Department's Name</th>
+                    <th>Manager</th>
+                    <th>Actions</th>
+                </tr>
+            </table>
+            <input type="button" id="add_Dept" value="Add Department" onclick="Add_Department()">
+            <input type="button" value="Back to Home Page" onclick="HPBack()">
+        </div>
+        <div id="logout" ><p><a href="LogIn.html" style="color: darkmagenta;" class="logout" onclick="logout()">Logout</a></p></div>
+    </body>
+
+
+
+
+</html>

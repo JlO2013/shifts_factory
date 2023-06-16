@@ -1,0 +1,118 @@
+<html>
+    <link rel="stylesheet" href="Factory.css" type="text/css">
+    <script>
+        let empsID = sessionStorage["empsID"]
+        function fullname()
+        {
+            var UserName = document.getElementById("fullname").innerHTML = sessionStorage.getItem("Full Name")
+            if(UserName == null)
+            {
+                window.location = "LogIn.html"
+            }        
+        }
+        function actionsCounter()
+        {
+            let user = sessionStorage.getItem("User ID")
+            let counter = localStorage.getItem(user) - 1
+            if(counter == 0)
+            {
+                alert("You reached your maximum actions for today! come back tomorow")
+                sessionStorage.removeItem("Full Name")
+                window.location = "Login.html"            }
+            else
+            {
+                counter = localStorage.setItem(user, counter)
+            }
+        }
+        function clock()
+        {
+            let interval = setInterval( () =>
+            {
+                let d = new Date()
+                let time = d.toLocaleTimeString()
+                time = localStorage.setItem("Time", time)
+            }
+            , 1000)
+        }
+        async function UpdateEmployee()
+        {
+            let resp = await fetch("https://localhost:44307/api/employees/" + empsID);
+            let employee = await resp.json();
+            document.getElementById("FirstName").value = employee.First_Name;
+            document.getElementById("LastName").value = employee.Last_Name;
+            document.getElementById("StartWorkYear").value = employee.Start_Work_Year;
+            let trObj = document.getElementById("trObj");            
+            let select = document.getElementById("selectObj")
+            var Option = document.createElement("option")
+            Option.text = employee.Department
+            select.appendChild(Option)
+            let resp2 = await fetch("https://localhost:44307/api/Departments");
+            let depts = await resp2.json(); 
+            let deptID = []
+            depts.forEach(dept => {
+                    let newObj = document.createElement('option')
+                    newObj.value = dept.ID
+                    let NOID = dept.ID
+                    let NOName = dept.Name
+                    newObj.text = (" Department: : " + NOName) 
+                    select.appendChild(newObj)
+               });
+            }
+        async function saveEmployeeID(NOID)
+        {
+            console.log(deptID)
+            saveEmployee(Number(deptID))
+        }
+        async function saveEmployee()
+        {
+            actionsCounter()
+            let deptID = document.querySelector("#selectObj").value
+            let emp= { First_Name : document.getElementById("FirstName").value,
+                        Last_Name : document.getElementById("LastName").value,
+                        Start_work_year : document.getElementById("StartWorkYear").value,
+                        DepartmentID : deptID}
+                 
+            let fetchParams = {method : 'PUT',
+                                body : JSON.stringify(emp),
+                                headers : {"Content-Type" : "application/json"}
+                                }
+            let resp3 = await fetch("https://localhost:44307/api/employees/" + empsID, fetchParams);
+            let status = await resp3.json();
+            alert(status)
+            window.location = "Employees.html"
+        }
+        function Back()
+        {
+            window.history.back()
+        }
+    </script>
+    <body onload="fullname(), UpdateEmployee(), clock()">
+        <div id="fullname" class="usercenter"></div>
+        <h1 class="h1">Eco-Fact<br/>Eco-Factory Managment System</h1>
+        <div class="empStable">
+            <table align='center' cellspacing=2 cellpadding=5 id="empsTable" border=1 >
+                <tr>
+                    <th>First name</th>
+                    <th>Last name</th>
+                    <th>Start work year</th>
+                    <th>Department</th>
+                    <th></th>
+                </tr>
+                <tbody id="empTab">
+                    <tr>
+                        <td><input type="text" id="FirstName"></td>
+                        <td><input type="text" id="LastName"></td>
+                        <td><input type="text" id="StartWorkYear"></td>
+                        <td id="tdDept" >
+                            <select id="selectObj"></select>
+                        </td>                           
+                        </td>
+                        <td><input type="button" id="Save" value="Save" onclick="saveEmployee()">
+                            <input type="button" id="Back" value="Back" onclick="Back()"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div id="logout" ><p><a href="LogIn.html" style="color: darkmagenta;" class="logout">Logout</a></p></div>
+    </body>
+</html>

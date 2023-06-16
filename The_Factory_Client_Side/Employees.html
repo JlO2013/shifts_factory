@@ -1,0 +1,250 @@
+<html>
+    <link rel="stylesheet" href="Factory.css" type="text/css">
+    <style>
+        .searchTable
+        {
+            border: 5px solid;
+            border-radius: 10px;
+            position: absolute;
+            background-color: antiquewhite;
+            top: 60%;
+            right: 10%;
+            text-align: left;
+            transform: translate(0, -50%);
+            padding: 10px;
+            width: 20%;
+            height: 40%;    
+        }
+    </style>
+    <script>
+        function fullname()
+        {
+            var UserName = document.getElementById("fullname").innerHTML = sessionStorage.getItem("Full Name") 
+            if(UserName == null)
+            {
+                window.location = "LogIn.html"
+            }
+        }
+        function actionsCounter()
+        {
+            let user = sessionStorage.getItem("User ID")
+            let counter = localStorage.getItem(user) - 1
+            if(counter == 0)
+            {
+                alert("You reached your maximum actions for today! come back tomorow")
+                sessionStorage.removeItem("Full Name")
+                window.location = "login.html"
+            }
+            else
+            {
+                counter = localStorage.setItem(user, counter)
+            }
+        }
+        function Add_Shift_To_Employee(empsID)
+        {   
+            empsID = sessionStorage.setItem("empsID", empsID)
+            window.location.href = "Add_Shift_To_Employee.html";
+        }
+        function clock()
+        {
+            let interval = setInterval( () =>
+            {
+                let d = new Date()
+                let time = d.toLocaleTimeString()
+                time = localStorage.setItem("Time", time)
+            }
+            , 1000)
+        }
+        function Edit_Employee(empsID)
+        {
+            sessionStorage["empsID"] = empsID
+            window.location.href = "Edit_Employee.html";
+        }
+        async function createEmployeeTable(employees)
+        { 
+            let tblObj = document.getElementById("empsTable")
+            employees.forEach(emps => {
+            let tdID = document.createElement("td");
+            let tdFN = document.createElement("td");
+            let tdLN = document.createElement("td");
+            let tdSWY = document.createElement("td");
+            let tdDept = document.createElement("td");
+            let tdShifts = document.createElement("td");
+            let tdActions = document.createElement("td");
+            tdActions.style.width = "150px"
+            let Edit = document.createElement("button")
+            let deleteBut = document.createElement('button')
+            let AddShift = document.createElement('button')
+            let linkObj = document.createElement("a");
+            let linkObjD = document.createElement("a")
+            let linkObjAS = document.createElement("a")
+            tdID.innerText = emps.ID
+            tdFN.innerText = emps.First_Name;
+            tdLN.innerText = emps.Last_Name;
+            tdSWY.innerText = emps.Start_Work_Year;
+            tdDept.innerText = emps.Department;
+            linkObj.innerText = "Edit"
+            linkObj.href = "javascript:Edit_Employee(" + emps.ID + ");"
+            linkObjD.innerText = "Delete"
+            linkObjD.href = "javascript:Delete_Employee(" + emps.ID + "), actionsCounter();"
+            linkObjAS.innerText = "Add Shift"
+            linkObjAS.href = "javascript:Add_Shift_To_Employee(" + emps.ID +  ");"
+            let ulObj = document.createElement("ul");
+            ulObj.style.height = "50px"
+            ulObj.style.width = "200px"
+            ulObj.style.overflowY = "scroll"
+            ulObj.style.scrollBehavior = "auto"
+            emps.Shift.forEach(Shift =>
+            {
+                let liDa = document.createElement("li");
+                let hoObj = document.createElement("ul")
+                let liST = document.createElement("li");
+                let liET = document.createElement("li");
+                let da = new Date(Shift.Date)
+                let Dday = da.getDate(Shift.Date)
+                let Dmonth = da.getMonth(Shift.Date)+1
+                let Dyear = da.getFullYear(Shift.Date)
+                let date = Dday + "/" + Dmonth + "/" + Dyear
+                liDa.innerText = "Date: " + date;
+                liST.innerText = "Start shift hour: " + Shift.Start_Time;
+                liET.innerText = "End shift hour" + Shift.End_Time;
+                liDa.appendChild(hoObj)
+                hoObj.appendChild(liST);
+                hoObj.appendChild(liET);
+                ulObj.appendChild(liDa);
+            })
+            tdShifts.appendChild(ulObj);
+            let trObj = document.createElement("tr");
+            trObj.style.height = "10%"
+            trObj.appendChild(tdID);
+            trObj.appendChild(tdFN);
+            trObj.appendChild(tdLN);
+            trObj.appendChild(tdSWY);
+            trObj.appendChild(tdDept);
+            trObj.appendChild(tdShifts);
+            Edit.append(linkObj);
+            tdActions.appendChild(Edit)
+            deleteBut.appendChild(linkObjD)
+            tdActions.appendChild(deleteBut)
+            AddShift.appendChild(linkObjAS)
+            tdActions.appendChild(AddShift)
+            trObj.appendChild(tdActions)
+            tblObj.appendChild(trObj);
+        });
+        }
+        async function Delete_Employee(empsID)
+        {
+            let fetchParams = {method : 'DELETE',
+                                header : {"Content-Type" : "application/json"}
+                                }
+            let resp = await fetch("https://localhost:44307/api/employees/" + empsID, fetchParams);
+            let status = await resp.json();   
+            alert(status)
+            window.location = "Employees.html"
+        }
+        async function GetEmps()
+        {
+            let resp = await fetch("https://localhost:44307/api/employees")
+            let employees = await resp.json();
+            createEmployeeTable(employees)
+        }
+        function HPBack()
+        {
+            window.location = "homePage.html"
+        }
+        function selectOnlyThis(id)
+        {
+            var myCheckbox = document.getElementsByName("myCheckbox");
+            Array.prototype.forEach.call(myCheckbox,function(el){
+                el.checked = false;
+            });
+            id.checked = true;
+        }
+        function toggle()
+        {
+            if(document.getElementById('First_Name').checked)
+            {
+                document.getElementById('firNam').style.visibility='visible';
+                document.getElementById('lasNam').style.visibility='hidden';
+                document.getElementById('dept').style.visibility='hidden';
+            }
+            else if(document.getElementById('Last_Name').checked)
+            {
+                document.getElementById('lasNam').style.visibility='visible';
+                document.getElementById('firNam').style.visibility='hidden';
+                document.getElementById('dept').style.visibility='hidden';
+            }
+            else if(document.getElementById('Department').checked)
+            {
+                document.getElementById('dept').style.visibility='visible';
+                document.getElementById('firNam').style.visibility='hidden';
+                document.getElementById('lasNam').style.visibility='hidden';
+            }
+            else
+            {
+                document.getElementById('firNam').style.visibility='hidden';
+                document.getElementById('lasNam').style.visibility='hidden';
+                document.getElementById('dept').style.visibility='hidden';
+            }
+        }
+        async function searchBY(name)
+        {           
+            if (document.getElementById('First_Name').checked) 
+            {
+                name = document.getElementById("firNam").value
+                name = sessionStorage.setItem("data", name)
+                window.location.href = "Search_Results.html"
+            }
+            else if (document.getElementById('Last_Name').checked) 
+            {
+                let data = document.getElementById("lasNam").value
+                sessionStorage["data"] = data
+                window.location.href = "Search_Results.html"               
+            }
+            else if (document.getElementById('Department').checked) 
+            {
+                let data = document.getElementById("dept").value
+                let resp = await fetch("https://localhost:44307/api/departments?Name="+data)
+                let department= await resp.json();
+                let deptID = department.ID
+                deptID = sessionStorage.setItem("departmentID", deptID) 
+                window.location.href = "Search_Results.html"               
+                console.log(department) 
+            }  
+        }
+    </script>
+    <body onload="fullname(), GetEmps(),clock()">
+        <div id="fullname" class="usercenter"></div>
+        <h1 class="h1">Eco-Fact<br/>Eco-Factory Managment System</h1>
+        <div class="empTable">
+            <table cellspacing=2 cellpadding=5 id="empsTable" border=1>
+                <tr>
+                    <th>ID</th>
+                    <th>First name</th>
+                    <th>Last name</th>
+                    <th>Start work year</th>
+                    <th>Department</th>
+                    <th>Shifts</th>
+                </tr>
+            </table><br/>
+            <input type="button" value="Back to Home Page" onclick="HPBack()">
+        </div>
+        <div class="searchTable">
+            <h2>Search for employees:</h2>
+            <form id="searches">
+                <input style="text-align: left;" type="radio" id="First_Name" name="myCheckbox" value="First_Name" onclick="selectOnlyThis(this), toggle()">
+                <label for="First_Name">by first name</label>
+                <input type="text" style=" visibility: hidden;" id="firNam" placeholder="Enter first name"> <br/>
+                <input style="text-align: left;" type="radio" id="Last_Name" name="myCheckbox" value="Last_Name" onclick="selectOnlyThis(this), toggle()">
+                <label for="Last_Name">by last name</label>
+                <input type="text" style=" visibility: hidden;" id="lasNam" placeholder="Enter last name"> <br/>
+                <input style="text-align: left;" type="radio" id="Department" name="myCheckbox" value="Department" onclick="selectOnlyThis(this), toggle()">
+                <label for="Department">by department</label>
+                <input type="text" style=" visibility: hidden;" id="dept" placeholder="Enter department name"> <br/>
+                <br/>
+                <input type="button" value="Search" onclick="searchBY(), actionsCounter()">
+            </form>
+        </div>
+        <div id="logout" ><p><a href="LogIn.html" style="color: darkmagenta;" class="logout">Logout</a></p></div>
+    </body>
+</html>
