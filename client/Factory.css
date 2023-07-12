@@ -1,0 +1,29 @@
+body {
+    background-image: url("Factory.jfif");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+}
+
+h1 {
+    border: 5px solid;
+    border-radius: 10px;
+    position: absolute;
+    background-color: transparent;
+    top: 10%;
+    left: 33%;
+    text-align: center;
+    transform: translate(0, -50%);
+    padding: 10px;
+}
+.usercenter {
+    border: 1px solid;
+    border-radius: 10px;
+    position: absolute;
+    background-color: transparent;
+    text-align: center;
+    left: 43%;
+    top: 3%;
+    transform: translate(0, -50%);
+    padding: 4px;
+}
