@@ -1,0 +1,109 @@
+<html>
+    <link rel="stylesheet" href="Factory.css" type="text/css">
+    <script>
+        function Edit_Employee(empsID)
+        {
+            actionsCounter()
+            sessionStorage["empsID"] = empsID
+            window.location.href = "Edit_Employee.html";
+        }
+        function fullname()
+        {
+            var UserName = document.getElementById("fullname").innerHTML = sessionStorage.getItem("Full Name")
+            if(UserName == null)
+            {
+                window.location = "LogIn.html"
+            }        
+        }
+        function HPBack()
+        {
+            window.location = "homePage.html"
+        }
+        
+        function actionsCounter()
+        {
+            let user = sessionStorage.getItem("User ID")
+            let counter = localStorage.getItem(user) - 1
+            if(counter == 0)
+            {
+                alert("You reached your maximum actions for today! come back tomorow")
+                sessionStorage.removeItem("Full Name")
+                window.location = "Login.html"            }
+            else
+            {
+                counter = localStorage.setItem(user, counter)
+            }
+        }
+        async function addShift()
+        {
+            actionsCounter()
+            let shift = { Date : document.getElementById("Date").value,
+                            StartTime: document.querySelector("#StartTime").value,
+                            EndTime: document.querySelector("#EndTime").value}
+
+            let fetchParams = {method : "Post",
+                                body : JSON.stringify(shift),
+                                headers : {"Content-Type" : "application/json"}
+                                }
+            let resp = await fetch("https://localhost:44367/api/shift", fetchParams);
+            let status = await resp.json();
+            alert("New shift had been added")
+            window.location = "Shifts.html"
+        }
+        function Back()
+        {
+            window.history.back()
+        }
+        function clock()
+        {
+            let interval = setInterval( () =>
+            {
+                let d = new Date()
+                let time = d.toLocaleTimeString()
+                console.log(time)
+                time = localStorage.setItem("Time", time)
+            }
+            , 1000)
+        }
+    </script>
+    <body onload="fullname(), clock()">
+        <div id="fullname" class="usercenter"></div>
+        <h1 class="h1">Facto-Shifts<br/>Factory Shifts Managment </h1>
+        <div class="shiftTable">
+            <div>
+                <table align='center' cellspacing=2 cellpadding=5 id="shiftTable" border=1 >
+                    <tr>
+                        <th>Date's Shift</th>
+                        <th>Start Hour</th>
+                        <th>End Hour</th>
+                    </tr>
+                    <tbody id="empTab">
+                        <tr>
+                            <td><input type="date" value="" id="Date" placeholder="Choose The date of the new shift"></td>
+                            <td><select type="number" id="StartTime">
+                                <option value="">Choose the hour the new shift begins</option>
+                                <option value="1000">10:00</option>
+                                <option value="1500">15:00</option>
+                            </select>
+                            </td>
+                            <td><select type="number" id="EndTime">
+                                <option value="">Choose the hour the new shift ends</option>
+                                <option value="1700">17:00</option>
+                                <option value="2300">23:00</option>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table><br/>
+            </div>
+            <div>
+                <input type="button" id="Save" value="Save" onclick="addShift()">
+                <input type="button" value="Back to Shifts" onclick="Back()">
+            </div>
+        </div>
+        <div id="logout" ><p><a href="LogIn.html" style="color: darkmagenta;" class="logout">Logout</a></p></div>
+    </body>
+
+
+
+
+</html>
