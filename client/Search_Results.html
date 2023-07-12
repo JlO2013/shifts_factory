@@ -1,0 +1,147 @@
+<html>
+    <link rel="stylesheet" href="Factory.css" type="text/css">
+    <style>
+        .empTable
+        {
+            border: 5px solid;
+            border-radius: 10px;
+            position: absolute;
+            background-color: antiquewhite;
+            top: 60%;
+            left: auto;
+            text-align: center;
+            transform: translate(0, -50%);
+            padding: 10px;    
+            overflow-y: scroll;
+            height: 70%;
+            width: 55%;
+        }
+    </style>
+    <script>
+            var data = sessionStorage.getItem("data")
+            var deptID =sessionStorage.getItem("DepartmentID")
+
+        function fullname()
+        {
+            var UserName = document.getElementById("fullname").innerHTML = sessionStorage.getItem("Full Name")
+            if(UserName == null)
+            {
+                window.location = "LogIn.html"
+            }        
+        }
+        function createEmployeesTable(employees)
+        { 
+            let tblObj = document.getElementById("empsTable")
+            employees.forEach(emps => {   
+            let tdID = document.createElement("td");
+            let tdFN = document.createElement("td");
+            let tdLN = document.createElement("td");
+            let tdSWY = document.createElement("td");
+            let tdDept = document.createElement("td");
+            let tdShifts = document.createElement("td");
+            let tdActions = document.createElement("td");
+            let Edit = document.createElement("button")
+            let deleteBut = document.createElement('button')
+            let AddShift = document.createElement('button')
+            let linkObj = document.createElement("a");
+            let linkObjD = document.createElement("a")
+            let linkObjAS = document.createElement("a")
+            tdID.innerText = emps.ID
+            tdFN.innerText = emps.FirstName;
+            tdLN.innerText = emps.LastName;
+            tdSWY.innerText = emps.StartWorkYear;
+            tdDept.innerText = emps.DepartmentID;
+            linkObj.innerText = "Edit"
+            linkObj.href = "javascript:Edit_Employee(" + emps.ID + ");"
+            linkObjD.innerText = "Delete"
+            linkObjD.href = "javascript:Delete_Employee(" + emps.ID + ");"
+            linkObjAS.innerText = "Add Shift"
+            linkObjAS.href = "javascript:Add_Shift_To_Employee(" + emps.ID +  ");"            
+            let ulObj = document.createElement("ul");
+            emps.Shifts.forEach(Shift =>
+            {
+                let liDa = document.createElement("li");
+                let liST = document.createElement("li");
+                let liET = document.createElement("li");
+                let da = new Date(Shift.Date)
+                let Dday = da.getDate(Shift.Date)
+                let Dmonth = da.getMonth(Shift.Date)+1
+                let Dyear = da.getFullYear(Shift.Date)
+                let date = Dday + "/" + Dmonth + "/" + Dyear
+                liDa.innerText = "Date" + date;
+                liST.innerText = "Start shift hour" + Shift.StartTime;
+                liET.innerText = "End shift hour" + Shift.EndTime;
+                ulObj.appendChild(liDa);
+                ulObj.appendChild(liST);
+                ulObj.appendChild(liET);
+            })          
+            tdShifts.appendChild(ulObj);
+            let trObj = document.createElement("tr");
+            trObj.appendChild(tdID);
+            trObj.appendChild(tdFN);
+            trObj.appendChild(tdLN);
+            trObj.appendChild(tdSWY);
+            trObj.appendChild(tdDept);
+            trObj.appendChild(tdShifts);
+            Edit.append(linkObj);
+            tdActions.appendChild(Edit)
+            deleteBut.appendChild(linkObjD)
+            tdActions.appendChild(deleteBut)
+            AddShift.appendChild(linkObjAS)
+            tdActions.appendChild(AddShift)
+            trObj.appendChild(tdActions)
+            tblObj.appendChild(trObj);
+        });
+        }        
+        async function searchbyName()
+        {
+            if(data != null)
+            {
+                let resp = await fetch("https://localhost:44367/api/Employee")
+                let employees = await resp.json();
+                createEmployeesTable(employees)
+            }
+           else
+            {
+                let resp = await fetch("https://localhost:44367/api/employee?department=" + deptID)
+                let employees = await resp.json();
+                createEmployeesTable(employees)
+            }
+        }
+        function clock()
+        {
+            let interval = setInterval( () =>
+            {
+                let d = new Date()
+                let time = d.toLocaleTimeString()
+                time = localStorage.setItem("Time", time)
+            }
+            , 1000)
+        }
+        function Back()
+        {
+            window.history.back()
+            sessionStorage.removeItem("data")
+            sessionStorage.removeItem("DepartmentID")
+        }
+    </script>
+     <body onload="fullname(),actionsCounter(), searchbyName(), clock()">
+        <div id="fullname" class="usercenter"></div>
+        <h1 class="h1">Facto-Shifts<br/>Factory Shifts Managment </h1>
+        <div class="shiftTable">
+            <table cellspacing=2 cellpadding=5 id="empsTable" border=1 >
+                <tr>
+                    <th>ID</th>
+                    <th>First name</th>
+                    <th>Last name</th>
+                    <th>Start work year</th>
+                    <th>Department</th>
+                    <th>Shifts</th>
+                    <th>Actions</th>
+                </tr>                
+            </table><br/>
+            <input type="button" value="Back" onclick="Back()">
+        </div>
+        <div id="logout" ><p><a href="LogIn.html" style="color: darkmagenta;" class="logout">Logout</a></p></div>
+    </body>
+</html>
